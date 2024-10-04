@@ -1,0 +1,26 @@
+﻿@{
+    ViewBag.PageTitle = "Product Management";
+    ViewBag.CardTitle = "Product List";
+    Layout = "_AdminDashboard";
+}
+
+<div>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
+</div>
+<table id="productsTable" class="table table-hover">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Actions</th>
+
+        </tr>
+    </thead>
+    
+</table>
+
+@section Scripts{
+    <script src="~/js/products.js"></script>
+}

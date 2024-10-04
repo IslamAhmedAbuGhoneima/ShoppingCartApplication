@@ -1,0 +1,28 @@
+﻿<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+@if (TempData["Created"] != null)
+{
+    <script>
+        toastr["success"]("@TempData["Created"]");
+    </script>
+}
+
+
+@if (TempData["Updated"] != null)
+{
+    <script>
+        toastr["info"]("@TempData["Updated"]");
+    </script>
+}
+
+@if (TempData["Deleted"] != null)
+{
+    <script>
+        toastr["error"]("@TempData["Deleted"]");
+    </script>
+}
+
+
+
+
