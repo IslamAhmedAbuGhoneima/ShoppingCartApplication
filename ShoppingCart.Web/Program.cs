@@ -47,7 +47,7 @@ namespace ShoppingCart.Web
             app.UseAuthorization();
 
             app.MapControllerRoute(
-                name: "default",
+                name: "Area",
                 pattern: "{area=Admin}/{controller=Home}/{action=Index}/{id?}");
 
             app.MapControllerRoute(
