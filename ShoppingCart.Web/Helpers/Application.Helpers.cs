@@ -1,5 +1,12 @@
 ﻿namespace ShoppingCart.Web.Helpers
 {
+    public enum Roles
+    {
+        Admin,
+        Editor,
+        Customer,
+
+    }
     public static class Application
     {
         public static string  ImageUpload(IWebHostEnvironment webHost, IFormFile ImageUrl)

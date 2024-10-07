@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShoppingCart.Entities.Models;
 using ShoppingCart.Entities.Repositories;
 
@@ -6,6 +7,7 @@ namespace ShoppingCart.Web.Areas.Admin.Controllers
 {
     //[Route("Admin/{controller}/{action=Index}", Name = "Category")]
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class CategoryController : Controller
     {
         private readonly IGenericRepository<Category> categoryRepo;
@@ -18,7 +20,6 @@ namespace ShoppingCart.Web.Areas.Admin.Controllers
         public IActionResult Index()
         {
             List<Category> categories = categoryRepo.GetAll().ToList();
-
             return View(categories);
         }
 

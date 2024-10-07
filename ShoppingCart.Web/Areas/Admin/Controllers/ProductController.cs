@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShoppingCart.Entities.Models;
 using ShoppingCart.Entities.ModelVM;
 using ShoppingCart.Entities.Repositories;
@@ -7,6 +8,8 @@ using ShoppingCart.Web.Helpers;
 namespace ShoppingCart.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
+
     public class ProductController : Controller
     {
         private readonly IGenericRepository<Product> productRepo;
