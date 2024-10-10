@@ -7,5 +7,7 @@ namespace ShoppingCart.Entities.Models
         public string Address { get; set; }
 
         public string City { get; set; }
+
+        List<Order> Orders { get; set; } = [];
     }
 }

@@ -18,12 +18,19 @@ namespace ShoppingCart.Web
             builder.Services.AddControllersWithViews();
 
 
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+            });
+
             builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
 
             builder.Services.AddSingleton<IEmailSender, EmailSender>();
             builder.Services.AddScoped<IGenericRepository<Category>, CategoryRepository>();
             builder.Services.AddScoped<IGenericRepository<Product>, ProductRepository>();
+            builder.Services.AddScoped<IGenericRepository<Order>, OrderRepository>();
+            builder.Services.AddScoped<IGenericRepository<OrderItem>, OrderItmeRepository>();
 
 
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -52,11 +59,15 @@ namespace ShoppingCart.Web
             }
 
             app.UseHttpsRedirection();
+
             app.UseStaticFiles();
 
+            app.UseSession();
 
             app.UseRouting();
 
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapRazorPages();

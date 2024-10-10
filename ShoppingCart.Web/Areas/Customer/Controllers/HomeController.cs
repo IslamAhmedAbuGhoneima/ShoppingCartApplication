@@ -24,10 +24,8 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
         {
             Product product = productRepo.Get(P => P.Id == id,"Category");
 
-            if(product is null)
-            {
-
-            }
+            if (product is null)
+                return NotFound();
 
 
             return View(product);

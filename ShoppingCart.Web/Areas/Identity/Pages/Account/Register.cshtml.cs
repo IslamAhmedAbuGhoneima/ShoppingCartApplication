@@ -115,12 +115,14 @@ namespace ShoppingCart.Web.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
+            
             if (!await _roleManager.RoleExistsAsync(Roles.Admin.ToString()))
             {
                 await _roleManager.CreateAsync(new IdentityRole(Roles.Admin.ToString()));
                 await _roleManager.CreateAsync(new IdentityRole(Roles.Editor.ToString()));
                 await _roleManager.CreateAsync(new IdentityRole(Roles.Customer.ToString()));
             }
+
 
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -145,6 +147,7 @@ namespace ShoppingCart.Web.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+
 
                     string UserRole = HttpContext.Request.Form["userRole"];
                     if (UserRole.IsNullOrEmpty())

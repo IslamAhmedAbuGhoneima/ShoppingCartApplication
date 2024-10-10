@@ -1,11 +1,22 @@
 ﻿namespace ShoppingCart.Web.Helpers
 {
-    public enum Roles
+    public enum Roles : byte
     {
         Admin,
         Editor,
         Customer,
 
+    }
+    
+    public enum OrderStatus : byte
+    {
+        Pending,
+        Approved,
+        Proccessing,
+        Cancelled,
+        Shipped,
+        Refund,
+        Rejected,
     }
     public static class Application
     {
@@ -27,6 +38,7 @@
 
             return $@"img\products\{imagePath}";
         }
+
 
     }
 }

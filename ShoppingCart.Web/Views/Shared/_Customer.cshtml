@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="description" content="" />
+        <meta name="description" content="Easily manage your shopping cart with features like adding products, updating quantities, and secure checkout. Enjoy seamless shopping with free delivery options and a user-friendly interface" />
         <meta name="author" content="" />
         <title>online Shop</title>
         <!-- Favicon-->
@@ -35,14 +35,7 @@
                     </ul>
                     <form class="d-flex">
                     <partial name="_LoginPartial" />
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <button class="btn btn-outline-dark" type="submit">
-                            <i class="bi-cart-fill me-1"></i>
-                            Cart
-                            <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
-                        </button>
-                    }
+                    <partial name="__CartCountPartial" />
                     
                     </form>
                 </div>

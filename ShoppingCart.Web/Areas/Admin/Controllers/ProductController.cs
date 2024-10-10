@@ -66,6 +66,7 @@ namespace ShoppingCart.Web.Areas.Admin.Controllers
                         Name = formProduct.Name,
                         Description = formProduct.Description,
                         Price = formProduct.Price,
+                        Stock = formProduct.Stock,
                         ImageUrl = ImageUrl,
                         CategoryId = formProduct.CategoryId,
                     };
@@ -99,6 +100,7 @@ namespace ShoppingCart.Web.Areas.Admin.Controllers
                 Name = product.Name,
                 Description = product.Description,
                 Price = product.Price,
+                Stock = product.Stock,
                 ImageUrl = product.ImageUrl,
                 CategoryId = product.CategoryId,
                 Categories = categoryRepo.GetAll().ToList(),
@@ -123,6 +125,7 @@ namespace ShoppingCart.Web.Areas.Admin.Controllers
                         Id = id,
                         Name = formProduct.Name,
                         Description = formProduct.Description,
+                        Stock = formProduct.Stock,
                         Price = formProduct.Price,
                         CategoryId = formProduct.CategoryId,
                     };
