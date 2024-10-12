@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using ShoppingCart.Entities.Models;
 using ShoppingCart.Entities.ModelVM;
 using ShoppingCart.Entities.Repositories;
-using ShoppingCart.Web.Helpers;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -16,9 +15,6 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
     {
 
         private readonly IGenericRepository<Product> _productRepository;
-        private readonly IGenericRepository<Order> _orderRepository;
-        private readonly IGenericRepository<OrderItem> _orderItemRepository;
-
         private readonly UserManager<ApplicationUser> _userManager;
 
 

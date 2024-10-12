@@ -1,4 +1,5 @@
-﻿using ShoppingCart.DataAccess.Data;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using ShoppingCart.DataAccess.Data;
 using ShoppingCart.Entities.Models;
 
 namespace ShoppingCart.DataAccess.implementation
@@ -7,5 +8,7 @@ namespace ShoppingCart.DataAccess.implementation
     {
         public OrderRepository(AppDbContext context)
             : base(context) { }
+
+        
     }
 }

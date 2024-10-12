@@ -1,4 +1,6 @@
 ﻿@model OrderSummaryVM
+@using Microsoft.Extensions.Options
+@inject IOptions<ShoppingCart.Web.Helpers.StripeConfigurationKeys> Stripe
 @{
     Layout = null;
 }

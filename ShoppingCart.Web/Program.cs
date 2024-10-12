@@ -5,6 +5,7 @@ using ShoppingCart.Entities.Models;
 using ShoppingCart.Entities.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Stripe;
 
 namespace ShoppingCart.Web
 {
@@ -28,7 +29,7 @@ namespace ShoppingCart.Web
 
             builder.Services.AddSingleton<IEmailSender, EmailSender>();
             builder.Services.AddScoped<IGenericRepository<Category>, CategoryRepository>();
-            builder.Services.AddScoped<IGenericRepository<Product>, ProductRepository>();
+            builder.Services.AddScoped<IGenericRepository<Entities.Models.Product>, ProductRepository>();
             builder.Services.AddScoped<IGenericRepository<Order>, OrderRepository>();
             builder.Services.AddScoped<IGenericRepository<OrderItem>, OrderItmeRepository>();
 
@@ -39,7 +40,6 @@ namespace ShoppingCart.Web
                 options.UseSqlServer(connectionString);
             });
 
-
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
@@ -47,6 +47,10 @@ namespace ShoppingCart.Web
             }).AddDefaultUI()
               .AddDefaultTokenProviders()
               .AddEntityFrameworkStores<AppDbContext>();
+
+
+
+            StripeConfiguration.ApiKey = builder.Configuration["Stripe:Secretkey"];
 
             var app = builder.Build();
 

@@ -3,6 +3,8 @@ using ShoppingCart.Entities.Models;
 using ShoppingCart.Entities.ModelVM;
 using ShoppingCart.Entities.Repositories;
 using ShoppingCart.Web.Helpers;
+using Stripe.Checkout;
+using OrderServices = Stripe.Climate;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -31,17 +33,16 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
                 : JsonSerializer.Deserialize<List<ShoppingCartVM>>(sessionCart);
         }
 
-
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CreateCheckoutSession(OrderSummaryVM orderSummaryVM)
+        public async Task<IActionResult> CreateCheckoutSession(OrderSummaryVM orderSummaryVM)
         {
             var sessionOrder = GetCartFromSession();
             if (ModelState.IsValid)
             {
                 try
                 {
-
                     string userId = User.Claims.FirstOrDefault(C => C.Type == ClaimTypes.NameIdentifier).Value;
 
                     Order order = new()
@@ -59,6 +60,8 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
                     _orderRepository.Save();
 
 
+                    var sessionLineItemOptions = new List<SessionLineItemOptions>();
+
                     foreach (var item in sessionOrder)
                     {
                         OrderItem orderItem = new()
@@ -71,9 +74,45 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
 
                         _orderItemRepository.Add(orderItem);
                         _orderItemRepository.Save();
+
+                        sessionLineItemOptions.Add(
+                            new()
+                            {
+                                PriceData = new SessionLineItemPriceDataOptions()
+                                {
+                                    UnitAmount = (long)(item.Price*100),
+                                    Currency = "usd",
+                                    ProductData = new SessionLineItemPriceDataProductDataOptions()
+                                    {
+                                        Name = item.Name,
+                                        Description = item.Description,
+                                    },
+                                },
+                                Quantity = item.Quantity
+                            });
                     }
 
-                    return RedirectToAction("Index", "Home");
+                    var domain = "https://localhost:7009/";
+                    var options = new SessionCreateOptions
+                    {
+                        LineItems = sessionLineItemOptions,
+                        Mode = "payment",
+                        SuccessUrl = domain + $"customer/payment/success?id={order.Id}",
+                        CancelUrl = domain + $"customer/payment/cancel?id={order.Id}",
+                    };
+
+                    var service = new SessionService();
+                    //Session session = service.Create(options);
+                    Session session =  await service.CreateAsync(options);
+                    order.SessionId = session.Id;
+                    order.PaymentIntentId = session.PaymentIntentId;
+
+                    _orderRepository.Save();
+
+                    Response.Headers.Add("Location", session.Url);
+
+                    return new StatusCodeResult(303);
+
                 }
                 catch (Exception ex)
                 {
@@ -85,6 +124,41 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
             orderSummaryVM.TotalPrice = sessionOrder.Sum(S => S.Quantity * S.Price);
             return View("/Areas/Customer/Views/Cart/OrderSummary.cshtml",  orderSummaryVM);
 
+        }
+
+        public IActionResult Success(int id)
+        {
+
+            Order order = _orderRepository.Get(O => O.Id == id);
+
+            var services = new SessionService();
+
+            Session session = services.Get(order.SessionId);
+
+            if(session.PaymentStatus.ToLower() == "paid")
+            {
+                order.PaymentStatus = OrderStatus.Approved.ToString();
+                order.OrderStatus = OrderStatus.Shipped.ToString();
+                order.PaymentDate = DateTime.UtcNow;
+                _orderRepository.Save();
+
+                HttpContext.Session.Remove("Cart");
+
+            }
+
+            return View(order);
+
+        }
+
+        public IActionResult Cancel(int id)
+        {
+            Order order = _orderRepository.Get(O => O.Id == id);
+            if(order is not null)
+            {
+                _orderRepository.Remove(order);
+                HttpContext.Session.Remove("Cart");
+            }
+            return View();
         }
     }
 }

@@ -21,32 +21,32 @@ namespace ShoppingCart.Entities.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime ShippingDate { get; set; }
+        public DateTime? ShippingDate { get; set; }
 
         public string OrderStatus { get; set; }
 
         public string PaymentStatus { get; set; }
 
-        public string TrackingNumber { get; set; }
+        public string? TrackingNumber { get; set; }
 
-        public string Carrier {  get; set; }
+        public string? Carrier {  get; set; }
 
-        public DateTime PaymentDate { get; set; }
+        public DateTime? PaymentDate { get; set; }
 
 
         #region Stipe Attribute
 
-        public string SessionId { get; set; }
+        public string? SessionId { get; set; }
 
-        public string PaymentIntentId { get; set; }
+        public string? PaymentIntentId { get; set; }
 
         #endregion
 
         [ForeignKey("ApplicationUser")]
         public string UserId { get; set; }
 
-        ApplicationUser ApplicationUser { get; set; }
+        ApplicationUser? ApplicationUser { get; set; }
 
-        List<OrderItem> items = [];
+        List<OrderItem>? items = [];
     }
 }

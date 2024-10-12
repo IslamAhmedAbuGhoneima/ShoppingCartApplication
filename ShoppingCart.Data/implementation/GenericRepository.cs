@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using ShoppingCart.DataAccess.Data;
 using ShoppingCart.Entities.Repositories;
 using System.Linq.Expressions;
@@ -7,7 +8,7 @@ namespace ShoppingCart.DataAccess.implementation
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        readonly AppDbContext context;
+        private readonly AppDbContext context;
         DbSet<T> dbSet;
 
         public GenericRepository(AppDbContext _context)
@@ -71,7 +72,7 @@ namespace ShoppingCart.DataAccess.implementation
 
         public void Save()
         {
-            context.SaveChanges();
+             context.SaveChanges();
         }
 
     }

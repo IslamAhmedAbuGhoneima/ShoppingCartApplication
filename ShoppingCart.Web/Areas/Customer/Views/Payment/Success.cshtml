@@ -1,0 +1,47 @@
+﻿@model Order
+@{
+    ViewData["Title"] = "Success";
+    Layout = "_Customer";
+}
+
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .card {
+        margin-top: 50px;
+        border-radius: 15px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .success-icon {
+        font-size: 4rem;
+        color: #28a745;
+    }
+</style>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill success-icon"></i>
+                    </div>
+                    <h1 class="card-title text-success">Payment Successful!</h1>
+                    <p class="card-text">Thank you for your purchase. Your order has been placed successfully.</p>
+                    <hr>
+                    <div class="order-summary mb-3">
+                        <h5>Order Summary</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item">Order Number: #@Model.Id</li>
+                        </ul>
+                    </div>
+                    <a asp-action="Index" asp-controller="Home" class="btn btn-primary">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
