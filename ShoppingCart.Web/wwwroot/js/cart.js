@@ -2,8 +2,9 @@ const cartSpan = document.getElementById("cartIcon");
 
 
 async function addToCart(id) {
-
-    const data = await fetch(`/Customer/Cart/AddToCart?id=${id}`);
+    inputQuantityElement = document.getElementById("inputQuantity");
+    const quantity = inputQuantityElement?.value;
+    const data = await fetch(`/Customer/Cart/AddToCart?id=${id}&quantity=${quantity}`);
     const response = await data.json();
 
     if (response.success) {

@@ -1,0 +1,185 @@
+﻿@model OrderDetailsVM
+@using ShoppingCart.Web.Helpers;
+@{
+    ViewBag.PageTitle = "Order Management";
+    ViewBag.CardTitle = "Order Details";
+}
+
+<form method="post" asp-action="UpdateOrderDetails" asp-route-id="@Model.Id">
+    <div class="container">
+        <div class="container rounded p-2">
+            <div class="row">
+               <div class="col-12 col-lg-6 pb-4">
+                   <div class="row">
+                       <h4 class="d-flex justify-content-center align-items-center mb-3"> 
+                           <span>PickUp Details</span>
+                       </h4>
+                   </div>
+
+                   <div class="text-danger" asp-validation-summary="All"></div>
+
+                    <div class="row my-1">
+                        <div class="col-3">Name</div>
+                        <div class="col-9">
+                            <input asp-for="UserName" class="form-control"/>
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+
+                    <div class="row my-1">
+                        <div asp-for="Email" class="col-3">Email</div>
+                        <div class="col-9">
+                            <input disabled asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row my-1">
+                        <div class="col-3">Phone</div>
+                        <div class="col-9">
+                            <input asp-for="PhoneNumber" class="form-control" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row my-1">
+                        <div class="col-3">Address</div>
+                        <div class="col-9">
+                            <input  asp-for="Address" class="form-control" />
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row my-1">
+                        <div class="col-3">City</div>
+                        <div class="col-9">
+                            <input  asp-for="City" class="form-control" />
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row my-1">
+                        <div class="col-3">Shipping Date</div>
+                        <div class="col-9">
+                            <input asp-for="ShippingDate" class="form-control" />
+                            <span asp-validation-for="ShippingDate" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row my-1">
+                        <div class="col-3">Carrier</div>
+                        <div class="col-9">
+                            <input asp-for="Carrier" class="form-control" />
+                            <span asp-validation-for="Carrier" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row my-1">
+                        <div class="col-3">Tracking Number</div>
+                        <div class="col-9">
+                            <input asp-for="TrackingNumber" class="form-control" />
+                            <span asp-validation-for="TrackingNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row my-1">
+                        <div class="col-3">Order Date</div>
+                        <div class="col-9">
+                            <input asp-for="CreatedAt" class="form-control" />
+                            <span asp-validation-for="CreatedAt" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row my-1">
+                        <div class="col-3">Session Id</div>
+                        <div class="col-9">
+                            <input disabled asp-for="SessionId" class="form-control" />
+                            <span asp-validation-for="SessionId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row my-1">
+                        <div class="col-3">Payment Intent Id</div>
+                        <div class="col-9">
+                            <input disabled asp-for="PaymentIntentId" class="form-control" />
+                            <span asp-validation-for="PaymentIntentId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row my-1">
+                        <div class="col-3">PaymentStatus</div>
+                        <div class="col-9">
+                            <input asp-for="PaymentStatus" class="form-control" />
+                            <span asp-validation-for="PaymentStatus" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row my-1">
+                        <div class="col-3">Payment Date</div>
+                        <div class="col-9">
+                            <input asp-for="PaymentDate" class="form-control" />
+                            <span asp-validation-for="PaymentDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <input type="submit" class="btn btn-primary form-control my-1" value="Update PickUp Details" />
+               </div>
+
+                <div class="col-12 col-lg-5 offset-lg-1">
+                    <h4 class="text-center">Order Summary</h4>
+
+                    <label class="btn btn-outline-primary form-control my-4">Order Status - <span class="order-status">@Model.OrderStatus</span></label>
+
+                    <ul class="list-group mb-4">
+
+                        @foreach(var item in Model.OrderItems)
+                        {
+                            <li class="list-group-item d-flex justify-content-between p-2">
+                                <div class="container row">
+                                    <div class="col-8">
+                                        <h6 class="my-0 text-primary">@item.Product.Name</h6>
+                                        <p class="text-muted mb-0">Price : @item.Price</p>
+                                        <p class="text-muted mb-0">Quantity : @item.Quantity</p>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <p class="text-success">@((item.Quantity * item.Price).ToString("C") )</p>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                        
+                        <li class="list-group-item bg-dark">
+                            <div class="container row">
+                                <div class="col-6">
+                                    <h5 class="text-white">TOTAL</h5>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <h5 class="text-white">@Model.TotalPrice.ToString("C")</h5>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+
+                    @if(Model.OrderStatus == OrderStatus.Approved.ToString())
+                    {
+                        <div onclick="startProccess(@Model.Id)" class="btn btn-primary">Start Proccess</div>
+                    }
+                    @if(Model.OrderStatus == OrderStatus.Proccessing.ToString())
+                    {
+                        <div onclick="startShipping(@Model.Id)" class="btn btn-success">Start Shipping</div>
+                    }
+                    @if (Model.OrderStatus != OrderStatus.Cancelled.ToString() || Model.OrderStatus != OrderStatus.Refund.ToString())
+                    {
+                        <div onclick="cancelOrder(@Model.Id)" class="btn btn-danger">Cancel Order</div>
+                    }
+                    
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    
+</form>
+
+<script src="~/js/order.js"></script>

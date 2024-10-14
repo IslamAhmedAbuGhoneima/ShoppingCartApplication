@@ -12,17 +12,17 @@
         </div>
         <div class="col-md-6">
             <div class="small mb-1">@Model.Category.Name</div>
-            <h1 class="display-5 fw-bolder">Shop item template</h1>
+            <h1 class="display-5 fw-bolder">@Model.Name</h1>
             <div class="fs-5 mb-5">
-                <span class="text-decoration-line-through">$45.00</span>
-                <span>$40.00</span>
+                <span class="text-decoration-line-through">$@(Model.Price + Model.Price*0.2m)</span>
+                <span>$@Model.Price</span>
                 <p class="lead">
-                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Perferendis facilis, voluptatibus neque maiores fuga placeat suscipit dicta ad quam, impedit esse explicabo maxime incidunt iusto fugiat nulla labore. Quibusdam, sit.
+                    @Model.Description
                 </p>
 
                 <div class="d-flex">
-                    <input class="form-control text-center me-3" id="inputQuantity" type="number" min="1" max="100" value="1" style="max-width:3rem"/>
-                    <button class="btn btn-outline-dark flex-shrink-0" type="button">
+                    <input  class="form-control text-center me-3" id="inputQuantity" type="number" min="1" max="100" value="1" style="max-width:3rem" />
+                    <button onclick="addToCart(@Model.Id)" class="btn btn-outline-dark flex-shrink-0" type="button">
                         <i class="bi-cart-fill me-1"></i>
                         Add to cart
                     </button>
@@ -33,3 +33,6 @@
 </div>
 
 
+@section Scripts {
+    <script src="/js/cart.js"></script>
+}

@@ -1,0 +1,24 @@
+﻿@{
+    ViewBag.PageTitle = "Order Management";
+    ViewBag.CardTitle = "Order List";
+}
+
+
+<table id="orders-table" class="table table-hover">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>PhoneNumber</th>
+            <th>Email</th>
+            <th>OrderStatus</th>
+            <th>TotalPrice</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+</table>
+
+@section Scripts {
+    <script src="~/js/order.js"></script>
+}

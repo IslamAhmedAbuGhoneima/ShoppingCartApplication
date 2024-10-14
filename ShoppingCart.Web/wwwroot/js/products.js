@@ -18,7 +18,6 @@ function loadData() {
         },
         "columns": [
             { "data": "name" },
-            { "data": "description" },
             { "data": "price" },
             { "data": "category.name" },
             {

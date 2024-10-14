@@ -27,14 +27,9 @@ namespace ShoppingCart.DataAccess.implementation
             context.Remove(entity);
         }
 
-        public IEnumerable<T> GetAll(Expression<Func<T, bool>> expression, string? includeWord)
+        public IEnumerable<T> GetAll(string? includeWord)
         {
             IQueryable<T> query = dbSet;
-
-            if(expression != null)
-            {
-                query.Where(expression);
-            }
 
             if(includeWord != null)
             {

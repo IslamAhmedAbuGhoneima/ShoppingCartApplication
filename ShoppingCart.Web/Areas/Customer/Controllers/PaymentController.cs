@@ -48,11 +48,13 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
                     Order order = new()
                     {
                         UserName = orderSummaryVM.Name,
+                        Email = orderSummaryVM.Email,
                         Address = orderSummaryVM.Address,
                         City = orderSummaryVM.City,
                         PhoneNumber = orderSummaryVM.PhoneNumber,
                         OrderStatus = OrderStatus.Pending.ToString(),
                         PaymentStatus = OrderStatus.Pending.ToString(),
+                        TotalPrice = sessionOrder.Sum(O => O.Quantity * O.Price),
                         UserId = userId,
                     };
 
@@ -105,7 +107,6 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
                     //Session session = service.Create(options);
                     Session session =  await service.CreateAsync(options);
                     order.SessionId = session.Id;
-                    order.PaymentIntentId = session.PaymentIntentId;
 
                     _orderRepository.Save();
 
@@ -138,12 +139,12 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
             if(session.PaymentStatus.ToLower() == "paid")
             {
                 order.PaymentStatus = OrderStatus.Approved.ToString();
-                order.OrderStatus = OrderStatus.Shipped.ToString();
-                order.PaymentDate = DateTime.UtcNow;
+                order.OrderStatus = OrderStatus.Approved.ToString();
+                order.PaymentDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                order.PaymentIntentId = session.PaymentIntentId;
                 _orderRepository.Save();
 
                 HttpContext.Session.Remove("Cart");
-
             }
 
             return View(order);
@@ -156,7 +157,9 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
             if(order is not null)
             {
                 _orderRepository.Remove(order);
+                _orderRepository.Save();
                 HttpContext.Session.Remove("Cart");
+
             }
             return View();
         }

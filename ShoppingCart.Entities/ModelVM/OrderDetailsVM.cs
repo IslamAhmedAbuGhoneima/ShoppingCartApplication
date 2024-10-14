@@ -1,17 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using ShoppingCart.Entities.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ShoppingCart.Entities.Models
+namespace ShoppingCart.Entities.ModelVM
 {
-    public class Order
+    public class OrderDetailsVM
     {
 
-        public int Id { get; set; }
-
         #region User Data
+        public int Id { get; set; }
 
         public string UserName { get; set; }
 
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         public string Address { get; set; }
 
@@ -19,24 +19,26 @@ namespace ShoppingCart.Entities.Models
 
         public string PhoneNumber { get; set; }
 
-        public decimal TotalPrice { get; set; }
 
         #endregion
 
-        public DateOnly CreatedAt { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
 
         public DateOnly? ShippingDate { get; set; }
 
-        public string OrderStatus { get; set; }
+        public DateOnly CreatedAt { get; set; }
+
+
+        public string? OrderStatus { get; set; }
 
         public string PaymentStatus { get; set; }
 
         public string? TrackingNumber { get; set; }
 
-        public string? Carrier {  get; set; }
+        public string? Carrier { get; set; }
 
         public DateOnly? PaymentDate { get; set; }
 
+        public decimal TotalPrice { get; set; }
 
         #region Stipe Attribute
 
@@ -46,11 +48,7 @@ namespace ShoppingCart.Entities.Models
 
         #endregion
 
-        [ForeignKey("ApplicationUser")]
-        public string UserId { get; set; }
+        public List<OrderItem> OrderItems { get; set; } = [];
 
-        ApplicationUser? ApplicationUser { get; set; }
-
-        List<OrderItem>? items = [];
     }
 }

@@ -8,7 +8,7 @@
 }
 
 
-<div class="row">
+<div class="row justify-content-around">
     <div class="col-md-4">
         <form asp-action="Edit" asp-route-Id="@Model.Id" enctype="multipart/form-data" method="post">
             <input type="hidden" asp-for="@Model.ImageUrl"/>
@@ -32,7 +32,7 @@
 
             <div class="form-group">
                 <label asp-for="ImageUrl" class="control-label"></label>
-                <input type="file" name="uploadFile" class="form-control" />
+                <input onchange="fillImage(event)" type="file" name="uploadFile" class="form-control" />
                 <span asp-validation-for="ImageUrl" class="text-danger"></span>
             </div>
 
@@ -51,8 +51,8 @@
             </div>
         </form>
     </div>
-    <div class="col-md-4">
-        <img src="~/@Model.ImageUrl"/>
+    <div class="col-md-4 text-end">
+        <img id="image-preview" class="w-75 h-50 mt-5" src="~/@Model.ImageUrl"/>
     </div>
 </div>
 
@@ -60,3 +60,11 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
+<script>
+
+    const ImageElement = document.getElementById("image-preview");
+    const fillImage = (event) => {
+        ImageElement.src = URL.createObjectURL(event.target.files[0]);
+    }
+
+</script>

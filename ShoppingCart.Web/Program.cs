@@ -79,11 +79,11 @@ namespace ShoppingCart.Web
 
             app.MapControllerRoute(
                 name: "Area",
-                pattern: "{area=Customer}/{controller=Home}/{action=Index}/");
+                pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
             app.MapControllerRoute(
                 name: "Area",
-                pattern: "{area=Admin}/{controller=Users}/{action=Index}/");
+                pattern: "{area=Admin}/{controller=Users}/{action=Index}/{id?}");
 
             app.MapControllerRoute(
                 name: "default",
