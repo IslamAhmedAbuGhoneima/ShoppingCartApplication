@@ -191,11 +191,11 @@ namespace ShoppingCart.Web.Areas.Admin.Controllers
 
                 _orderRepo.Save();
                 TempData["Updated"] = "Order has been Canceled";
-                return RedirectToAction("Details", "Order", new { id = order.Id });
+                return Json(new { Success = true });
             }
             catch
             {
-                return Content("Something went wrong try again");
+                return Json(new { Success = false });
             }
 
         }

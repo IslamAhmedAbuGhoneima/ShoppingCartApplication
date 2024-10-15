@@ -127,7 +127,7 @@ async function startShipping(id) {
 
 const cancelOrder = async (id) => {
     const token = document.querySelector("input[name='__RequestVerificationToken']").value;
-    return await fetch(`/Admin/Order/CancelOrder/${id}`,
+    const data = await fetch(`/Admin/Order/CancelOrder/${id}`,
         {
             method: "POST",
             headers: {
@@ -135,4 +135,16 @@ const cancelOrder = async (id) => {
                 "RequestVerificationToken": token
             }
         });
+
+    const response = await data.json();
+    if (response.success) {
+        location.reload();
+    } else {
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Something went wrong!",
+        });
+    }
+
 }
