@@ -50,47 +50,61 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
             return View(shoppingCart);
         }
 
-        
-        public IActionResult AddToCart(int id,int quantity=1)
-        {
 
+        public IActionResult AddToCart(int id, int quantity = 1)
+        {
             // Retrieve product from repository
             var product = _productRepository.Get(p => p.Id == id);
-            if (product == null) return NotFound();
-
-
-            var shoppingCart = GetCartFromSession();
-
-            // Check if the product is already in the cart and update quantity
-            var cartItem = shoppingCart.FirstOrDefault(item => item.ProductId == id);
-            if (cartItem != null)
+            try
             {
-                cartItem.Quantity += quantity;
+                if (product == null) return NotFound();
+
+                var shoppingCart = GetCartFromSession();
+
+                // Check if the product is already in the cart and update quantity
+                var cartItem = shoppingCart.FirstOrDefault(item => item.ProductId == id);
+                if (cartItem != null)
+                {
+                    cartItem.Quantity += quantity;
+                    if (cartItem.Quantity > product.Stock)
+                    {
+                        cartItem.Quantity -= quantity;
+                        return Json(new { Success = false, Available = product.Stock });
+                    }
+                }
+                else
+                {
+                    if (quantity > product.Stock)
+                    {
+                        return Json(new { Success = false, Available = product.Stock });
+                    }
+                    shoppingCart.Add(new ShoppingCartVM
+                    {
+                        ProductId = id,
+                        Name = product.Name,
+                        Description = product.Description,
+                        ImageUrl = product.ImageUrl,
+                        Price = product.Price,
+                        Quantity = quantity,
+                    });
+                }
+
+                SaveCartToSession(shoppingCart);
+
+                int cartItemsCount = shoppingCart.Sum(item => item.Quantity);
+
+                return Json(new { Success = true, CartCount = cartItemsCount });
             }
-            else
+            catch
             {
-                shoppingCart.Add(new ShoppingCartVM { 
-                    ProductId = id, 
-                    Name = product.Name,
-                    Description = product.Description,
-                    ImageUrl = product.ImageUrl,
-                    Price = product.Price, 
-                    Quantity = quantity,
-                });
+                return Json(new { Success = false, Available = product.Stock });
             }
-
-            SaveCartToSession(shoppingCart);
-
-            int cartItemsCount = shoppingCart.Sum(item => item.Quantity);
-
-            return Json(new { Success = true, CartCount = cartItemsCount });
+            
         }
 
 
         public IActionResult Remove(int id)
         {
-
-
             var shoppingCart = GetCartFromSession();
             var item = shoppingCart.FirstOrDefault(S => S.ProductId == id);
 
@@ -101,18 +115,19 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
             SaveCartToSession(shoppingCart);
 
             return RedirectToAction("Index");
-
-
         }
 
-        public IActionResult ChangeProductQuantity(int id,int quantity)
+        public IActionResult ChangeProductQuantity(int id, int quantity)
         {
-
             var shoppingCart = GetCartFromSession();
             var cartItem = shoppingCart.FirstOrDefault(S => S.ProductId == id);
-
+            var productStock = _productRepository.Get(P => P.Id == id).Stock;
             if(cartItem is not null)
             {
+                if(quantity > productStock)
+                {
+                    return Json(new { Success = false, Available = productStock });
+                }
                 cartItem.Quantity = quantity;
 
                 SaveCartToSession(shoppingCart);
@@ -159,6 +174,5 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
 
             return View(order);
         }
-
     }
 }

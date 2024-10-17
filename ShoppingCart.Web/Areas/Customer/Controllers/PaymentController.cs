@@ -13,15 +13,14 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
     [Area("Customer")]
     public class PaymentController : Controller
     {
-        private readonly IGenericRepository<OrderItem> _orderItemRepository;
-        private readonly IGenericRepository<Order> _orderRepository;
+        private readonly IGenericRepository<OrderItem> _orderItemRepo;
+        private readonly IGenericRepository<Order> _orderRepo;
 
-
-        public PaymentController(IGenericRepository<OrderItem> orderItemRepository,
-                IGenericRepository<Order> orderRepository)
+        public PaymentController(IGenericRepository<OrderItem> orderItemRepo,
+                IGenericRepository<Order> orderRepo)
         {
-            _orderItemRepository = orderItemRepository;
-            _orderRepository = orderRepository;
+            _orderItemRepo = orderItemRepo;
+            _orderRepo = orderRepo;
         }
 
 
@@ -58,8 +57,8 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
                         UserId = userId,
                     };
 
-                    _orderRepository.Add(order);
-                    _orderRepository.Save();
+                    _orderRepo.Add(order);
+                    _orderRepo.Save();
 
 
                     var sessionLineItemOptions = new List<SessionLineItemOptions>();
@@ -74,8 +73,8 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
                             Price = item.Price,
                         };
 
-                        _orderItemRepository.Add(orderItem);
-                        _orderItemRepository.Save();
+                        _orderItemRepo.Add(orderItem);
+                        _orderItemRepo.Save();
 
                         sessionLineItemOptions.Add(
                             new()
@@ -108,7 +107,7 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
                     Session session =  await service.CreateAsync(options);
                     order.SessionId = session.Id;
 
-                    _orderRepository.Save();
+                    _orderRepo.Save();
 
                     Response.Headers.Add("Location", session.Url);
 
@@ -129,8 +128,8 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
 
         public IActionResult Success(int id)
         {
-
-            Order order = _orderRepository.Get(O => O.Id == id);
+            Order order = _orderRepo.Get(O => O.Id == id);
+            var orderItems = _orderItemRepo.GetAll(OI => OI.OrderId == id, "Product").ToList();
 
             var services = new SessionService();
 
@@ -142,24 +141,27 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
                 order.OrderStatus = OrderStatus.Approved.ToString();
                 order.PaymentDate = DateOnly.FromDateTime(DateTime.UtcNow);
                 order.PaymentIntentId = session.PaymentIntentId;
-                _orderRepository.Save();
+
+                foreach (var item in orderItems)
+                    item.Product.Stock -= item.Quantity;
+                
+                _orderRepo.Save();
+                _orderItemRepo.Save();
 
                 HttpContext.Session.Remove("Cart");
             }
 
             return View(order);
-
         }
 
         public IActionResult Cancel(int id)
         {
-            Order order = _orderRepository.Get(O => O.Id == id);
+            Order order = _orderRepo.Get(O => O.Id == id);
             if(order is not null)
             {
-                _orderRepository.Remove(order);
-                _orderRepository.Save();
+                _orderRepo.Remove(order);
+                _orderRepo.Save();
                 HttpContext.Session.Remove("Cart");
-
             }
             return View();
         }

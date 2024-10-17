@@ -51,6 +51,6 @@ namespace ShoppingCart.Entities.Models
 
         ApplicationUser? ApplicationUser { get; set; }
 
-        List<OrderItem>? items = [];
+        public ICollection<OrderItem> Items { get; set; } = null!;
     }
 }

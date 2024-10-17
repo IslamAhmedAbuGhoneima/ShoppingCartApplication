@@ -16,7 +16,7 @@ namespace ShoppingCart.DataAccess.implementation
             context = _context;
             dbSet = context.Set<T>();
         }
-
+        
         public void Add(T entity)
         {
             context.Add(entity);

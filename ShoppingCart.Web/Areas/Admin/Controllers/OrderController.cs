@@ -168,7 +168,7 @@ namespace ShoppingCart.Web.Areas.Admin.Controllers
             try
             {
                 Order order = _orderRepo.Get(O => O.Id == id);
-
+                var orderItems = _orderItemRepo.GetAll(OI => OI.OrderId == id, "Product");
                 if(order.PaymentStatus == OrderStatus.Approved.ToString())
                 {
                     var options = new RefundCreateOptions()
@@ -182,6 +182,8 @@ namespace ShoppingCart.Web.Areas.Admin.Controllers
 
                     order.OrderStatus = OrderStatus.Cancelled.ToString();
                     order.PaymentStatus = OrderStatus.Refund.ToString();
+                    foreach (var item in orderItems)
+                        item.Product.Stock += item.Quantity;
                 }
                 else
                 {
@@ -190,6 +192,7 @@ namespace ShoppingCart.Web.Areas.Admin.Controllers
                 }
 
                 _orderRepo.Save();
+                _orderItemRepo.Save();
                 TempData["Updated"] = "Order has been Canceled";
                 return Json(new { Success = true });
             }

@@ -10,6 +10,13 @@ async function addToCart(id) {
     if (response.success) {
         cartSpan.innerHTML = response.cartCount;
     }
+    else {
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: `Product Quantity out of Stock the available ${response.available}`,
+        });
+    }
 
 }
 
@@ -33,8 +40,14 @@ async function changeProductQuantity(id) {
         const overallTotalPriceElement = document.getElementById("overallTotalPrice");
         overallTotalPriceElement.innerHTML = `$${response.overallTotalPrice.toFixed(2)}`;
 
-
         finalPriceElement.innerHTML = `$${response.overallTotalPrice.toFixed(2)}`;
+    }
+    else {
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: `Product Quantity out of Stock the available ${response.available}`,
+        });
     }
 }
 
@@ -46,7 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const response = await data.json();
 
     if (response.success) {
-        cartSpan.innerHTML = response.count;
+        cartSpan.innerHTML = response?.count;
     } 
 
 })

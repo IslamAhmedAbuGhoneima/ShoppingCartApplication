@@ -167,7 +167,7 @@
                     {
                         <div onclick="startShipping(@Model.Id)" class="btn btn-success">Start Shipping</div>
                     }
-                    @if (Model.OrderStatus != OrderStatus.Cancelled.ToString() || Model.OrderStatus != OrderStatus.Refund.ToString())
+                    @if (Model.OrderStatus != OrderStatus.Cancelled.ToString() || Model.OrderStatus == OrderStatus.Refund.ToString())
                     {
                         <div onclick="cancelOrder(@Model.Id)" class="btn btn-danger">Cancel Order</div>
                     }
