@@ -21,14 +21,14 @@
             <!-- Dynamic order cards will be inserted here -->
             @foreach(var order in Model)
             {
-                <div class="col-md-6 mb-4">
+                <div class="text-center mb-4">
                     <div class="card">
                         <div class="card-body">
                                 <h5 class="card-title">Order #@order.Id</h5>
                                 <p class="card-text"><strong>Date:</strong> @order.CreatedAt</p>
                                 @foreach(var item in order.Items)
                                 {
-                                    <p class="card-text"><strong>Items:</strong> You toke @item.Product.Name with cost @item.Price.ToString("C") and quantity @item.Quantity </p>
+                                    <p class="card-text"><strong>Items:</strong> You toke @item.ProductName with cost @item.Price.ToString("C") and quantity @item.Quantity </p>
                                 }
                                 <p class="card-text"><strong>Total Price:</strong> @order.TotalPrice.ToString("C")</p>
                             @if(order.OrderStatus == OrderStatus.Approved.ToString())

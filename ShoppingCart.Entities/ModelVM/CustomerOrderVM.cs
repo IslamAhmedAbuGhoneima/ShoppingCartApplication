@@ -12,6 +12,6 @@ namespace ShoppingCart.Entities.ModelVM
 
         public DateOnly CreatedAt { get; set; }
 
-        public List<OrderItem> Items { get; set; }
+        public List<OrderItemVM> Items { get; set; }
     }
 }

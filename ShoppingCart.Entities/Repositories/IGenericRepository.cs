@@ -5,7 +5,7 @@ namespace ShoppingCart.Entities.Repositories
     public interface IGenericRepository<T> where T: class
     {
 
-        IEnumerable<T> GetAll(Expression<Func<T, bool>>? expression = null,string? includeWord = null);
+		IQueryable<T> GetAll(Expression<Func<T, bool>>? expression = null,string? includeWord = null);
 
 
         T Get(Expression<Func<T, bool>>? expression = null, string? includeWord = null);

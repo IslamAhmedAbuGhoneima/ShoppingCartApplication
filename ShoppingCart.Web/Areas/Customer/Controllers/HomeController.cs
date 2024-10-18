@@ -9,35 +9,57 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
     [Area("Customer")]
     public class HomeController : Controller
     {
+        private readonly IGenericRepository<Category> _categoryRepo;
         private readonly IGenericRepository<Product> _productRepo;
         private readonly IGenericRepository<Order> _orderRepo;
-        private readonly IGenericRepository<OrderItem> _orderItemRepo;
-
 
         public HomeController(
             IGenericRepository<Product> productRepo,
             IGenericRepository<Order> orderRepo,
-            IGenericRepository<OrderItem> orderItemRepo)
+            IGenericRepository<Category> categoryRepo)
         {
             _productRepo = productRepo;
             _orderRepo = orderRepo;
-            _orderItemRepo = orderItemRepo;
+            _categoryRepo = categoryRepo;
         }
 
-        public IActionResult Index(int page = 1)
+        public IActionResult Index(int category, int min, int max, int page = 1)
         {
             int productsPerPage = 8;
-            int totalPages = 
-                (int)Math.Ceiling((decimal)_productRepo.GetAll().Count() / productsPerPage);
 
-            ViewBag.totalPages = totalPages;
-            ViewBag.CurrentPage = page;
-            List<Product> products =
-                _productRepo.GetAll()
+            IQueryable<Product> productsQuery = _productRepo.GetAll();
+                
+			if (category != 0)
+            {
+				productsQuery = productsQuery.Where(C => C.CategoryId == category);
+			}
+
+            if (max != 0 && min != 0)
+            {
+				productsQuery = productsQuery.Where(C => C.Price >= min && C.Price <= max);
+			}
+
+            int totalProducts = productsQuery.Count();
+            int totalPages =
+                (int)Math.Ceiling((decimal)totalProducts / productsPerPage);
+
+            List<Product> products = productsQuery
                 .Skip((page - 1) * productsPerPage)
                 .Take(productsPerPage)
                 .ToList();
-            return View(products);
+
+			List<Category> categories = _categoryRepo.GetAll().ToList();
+
+			ViewBag.totalPages = totalPages;
+			ViewBag.CurrentPage = page;
+
+			CategoryFilterVM categoryFilter = new CategoryFilterVM()
+            {
+                Products = products,
+                Categories = categories
+            };
+
+            return View(categoryFilter);
         }
 
         public IActionResult Details(int id)
@@ -65,7 +87,12 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
                     TotalPrice = O.TotalPrice,
                     OrderStatus = O.OrderStatus,
                     CreatedAt = O.CreatedAt,
-                    Items = _orderItemRepo.GetAll(OI => OI.OrderId == O.Id,"Product").ToList(),
+                    Items = O.Items.Select(item => new OrderItemVM
+                    {
+                        ProductName = item.Product.Name,
+                        Price = item.Price,
+                        Quantity = item.Quantity
+                    }).ToList(),
                 }).ToList();
 
             return View(CustomerOrderVM);

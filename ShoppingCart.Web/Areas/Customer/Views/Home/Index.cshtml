@@ -1,84 +1,98 @@
-﻿@model List<Product>
+﻿@model CategoryFilterVM
 @{
     ViewData["Title"] = "Products Page";
 }
 
 <div class="container px-4 px-lg-5 mt-5">
-    <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-        @foreach (var item in Model)
-        {
-            <div class="col mb-5">
-                <div class="card h-100">
-                    <!-- Product image-->
-                    <a asp-action="Details" class="ratio ratio-1x1" asp-route-Id="@item.Id">
-                        <img loading="lazy" 
-                            src="~/@item.ImageUrl" 
-                            alt="product image"
-                            class="card-img-top img-fluid" 
-                            style="filter:@(item.Stock==0?"grayscale(1)":"none")"
-                            />
-                    </a>
-                    <!-- Product details-->
-                    <div class="card-body p-4">
-                        <div class="text-center">
-                            <!-- Product name-->
-                            <h1 class="fw-bolder fs-3">@item.Name</h1>
-                            <!-- Product price-->
-                            $@item.Price
-                        </div>
-                    </div>
-                    <p class="mb-3 text-light d-flex justify-content-around align-items-center bg-secondary rounded-lg p-1">Available <span class="ml-2 fs-4 fw-bold text-danger">@item.Stock</span></p>
-                    <!-- Product actions-->
-                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center">
-                              <button 
-                                  class="btn btn-outline-dark mt-auto" 
-                                  onclick="addToCart(@item.Id)"
-                                  @(item.Stock==0? "disabled":"")>
-                                @(item.Stock == 0 ? "Out of stock" : "Add To Cart")
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-        <div class="d-flex justify-content-center">
-            <ul class="pagination">
-                <li class="page-item @(ViewBag.CurrentPage==1?"disabled":"")">
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-controller="Home"
-                       asp-area="Customer"
-                       asp-route-page="@(ViewBag.CurrentPage-1)"
-                       tabindex="-1">Previous</a>
-                </li>
-                @for (int i = 1; i <= ViewBag.totalPages; i++)
-                {
-                    if (ViewBag.CurrentPage == i)
-                    {
-                        <li class="page-item active">
-                            <a class="page-link" asp-action="Index" asp-controller="Home" asp-area="Customer" asp-route-page="@i">@i</a>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="page-item"><a class="page-link" asp-action="Index" asp-controller="Home" asp-area="Customer" asp-route-page="@i">@i</a></li>
 
-                    }
+    <div class="row">
+        <partial name="_FilterPartial" model="@Model.Categories"/>
+        <div class="col-9">
+
+            <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+                @foreach (var item in Model.Products)
+                {
+                    <div class="col mb-5">
+                        <div class="card h-100">
+                            <!-- Product image-->
+                            <a asp-action="Details" class="ratio ratio-1x1" asp-route-Id="@item.Id">
+                                <img loading="lazy"
+                                     src="~/@item.ImageUrl"
+                                     alt="product image"
+                                     class="card-img-top img-fluid"
+                                     style="filter:@(item.Stock==0?"grayscale(1)":"none")" />
+                            </a>
+                            <!-- Product details-->
+                            <div class="card-body p-4">
+                                <div class="text-center">
+                                    <!-- Product name-->
+                                    <h1 class="fw-bolder fs-3">@item.Name</h1>
+                                    <!-- Product price-->
+                                    $@item.Price
+                                </div>
+                            </div>
+                            <p class="mb-3 text-light d-flex justify-content-around align-items-center bg-secondary rounded-lg p-1">Available <span class="ml-2 fs-4 fw-bold text-danger">@item.Stock</span></p>
+                            <!-- Product actions-->
+                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                <div class="text-center">
+                                    <button class="btn btn-outline-dark mt-auto"
+                                            onclick="addToCart(@item.Id)"
+                                    @(item.Stock == 0 ? "disabled" : "")>
+                                        @(item.Stock == 0 ? "Out of stock" : "Add To Cart")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+        </div>
+
+    </div>
+
+    
+    <div class="d-flex justify-content-center">
+        <ul class="pagination">
+            <li class="page-item @(ViewBag.CurrentPage==1?"disabled":"")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-controller="Home"
+                   asp-area="Customer"
+                   asp-route-page="@(ViewBag.CurrentPage-1)"
+                   tabindex="-1">Previous</a>
+            </li>
+            @for (int i = 1; i <= ViewBag.totalPages; i++)
+            {
+                if (ViewBag.CurrentPage == i)
+                {
+                    <li class="page-item active">
+                        <a class="page-link" asp-action="Index" asp-controller="Home" asp-area="Customer" asp-route-page="@i">@i</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item"><a class="page-link" asp-action="Index" asp-controller="Home" asp-area="Customer" asp-route-page="@i">@i</a></li>
 
                 }
-                <li class="page-item">
-                    <a class="page-link @(ViewBag.CurrentPage==ViewBag.totalPages?"disabled":"")"
-                       asp-action="Index"
-                       asp-controller="Home"
-                       asp-area="Customer"
-                       asp-route-page="@(ViewBag.CurrentPage+1)">Next</a>
-                </li>
-            </ul>
-        </div>
-    
+
+            }
+            <li class="page-item">
+                <a class="page-link @(ViewBag.CurrentPage==ViewBag.totalPages?"disabled":"")"
+                   asp-action="Index"
+                   asp-controller="Home"
+                   asp-area="Customer"
+                   asp-route-page="@(ViewBag.CurrentPage+1)">Next</a>
+            </li>
+        </ul>
+    </div>
+
 </div>
+
+
+
+
+        
 
 @section Scripts {
     <script src="/js/cart.js"></script>                        
