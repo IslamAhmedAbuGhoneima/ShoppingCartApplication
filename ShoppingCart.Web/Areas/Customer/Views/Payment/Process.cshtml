@@ -1,0 +1,76 @@
+﻿@model OrderItemDetailsVM
+@{
+    ViewData["Title"] = "Process";
+    Layout = "_Customer";
+}
+
+<div class="container">
+    <h1>Order summary</h1>
+
+    <table class="table table-hover table-bordered">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                decimal totalOrderPrice = 0;
+            }
+            @foreach (var item in Model.OrderItems)
+            {
+                totalOrderPrice += (item.Price * item.Quantity);
+                <tr class="text-center">
+                    <td>
+                        <img 
+                            src="~/@item.ImageUrl" 
+                            title="@item.ProductName image" 
+                            alt="product image"
+                            class="img-fluid"
+                            style="width:160px; height:160px;"
+                        >
+                    </td>
+                    <td style="line-height:10;">@item.ProductName</td>
+                    <td style="line-height:10;">@item.Price.ToString("C")</td>
+                    <td style="line-height:10;">@item.Quantity</td>
+                    <td style="line-height:10;">@((item.Price * item.Quantity).ToString("C"))</td>
+                </tr>
+            }
+
+            @if (Model.Order.CouponCode is not null)
+            {
+                <tr class="subtotal">
+                    <td>Subtotal</td>
+                    <td colspan="3"></td>
+                    <td class="num">
+                        @totalOrderPrice.ToString("C")
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        "@Model.Order.CouponCode" (@Model.Order.Discount % off)
+                    </td>
+                    <td colspan="3"></td>
+                    <td class="text-danger">
+                        - $@((((decimal)Model.Order.Discount / 100) * totalOrderPrice).ToString("C"))
+                    </td>
+                </tr>
+            }
+
+            <tr class="total">
+                <td colspan="4">Total" </td>
+                <td class="num">@Model.Order.TotalPrice.ToString("C")</td>
+            </tr>
+        </tbody>
+    </table>
+    <form asp-action="CreateCheckoutSession" asp-controller="Payment" asp-area="Customer" method="POST">
+        <input type="submit" class="btn btn-primary" value="Pay now">
+    </form>
+</div>
+
+
+

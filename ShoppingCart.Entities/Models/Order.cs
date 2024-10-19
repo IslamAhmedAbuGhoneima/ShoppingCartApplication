@@ -33,7 +33,7 @@ namespace ShoppingCart.Entities.Models
 
         public string? TrackingNumber { get; set; }
 
-        public string? Carrier {  get; set; }
+        public string? Carrier { get; set; }
 
         public DateOnly? PaymentDate { get; set; }
 
@@ -52,5 +52,12 @@ namespace ShoppingCart.Entities.Models
         ApplicationUser? ApplicationUser { get; set; }
 
         public ICollection<OrderItem> Items { get; set; } = null!;
+
+        [ForeignKey("Coupon")]
+        public string? CouponCode { get; set; }
+
+        public int? Discount { get; set; }
+
+        public Coupon? Coupon { get; set; }
     }
 }

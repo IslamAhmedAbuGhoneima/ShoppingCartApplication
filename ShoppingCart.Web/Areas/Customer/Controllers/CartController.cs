@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ShoppingCart.Entities.Models;
 using ShoppingCart.Entities.ModelVM;
 using ShoppingCart.Entities.Repositories;
-using System.Security.Claims;
 using System.Text.Json;
 
 namespace ShoppingCart.Web.Areas.Customer.Controllers
@@ -14,15 +14,15 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
     public class CartController : Controller
     {
 
-        private readonly IGenericRepository<Product> _productRepository;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IGenericRepository<Product> _productRepo;
+        private readonly IGenericRepository<Coupon> _couponRepo;
 
-
-        public CartController(IGenericRepository<Product> productRepository,
-                UserManager<ApplicationUser> userManager)
+        public CartController(
+            IGenericRepository<Product> productRepo,
+            IGenericRepository<Coupon> couponRepo)
         {
-            _productRepository = productRepository;
-            _userManager = userManager;
+            _productRepo = productRepo;
+            _couponRepo = couponRepo;
         }
 
 
@@ -54,7 +54,7 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
         public IActionResult AddToCart(int id, int quantity = 1)
         {
             // Retrieve product from repository
-            var product = _productRepository.Get(p => p.Id == id);
+            var product = _productRepo.Get(p => p.Id == id);
             try
             {
                 if (product == null) return NotFound();
@@ -121,7 +121,7 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
         {
             var shoppingCart = GetCartFromSession();
             var cartItem = shoppingCart.FirstOrDefault(S => S.ProductId == id);
-            var productStock = _productRepository.Get(P => P.Id == id).Stock;
+            var productStock = _productRepo.Get(P => P.Id == id).Stock;
             if(cartItem is not null)
             {
                 if(quantity > productStock)
@@ -136,7 +136,7 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
                 var productTotalPrice = cartItem.Price * cartItem.Quantity;
 
                 // Calculate the overall total price for the cart
-                var totalCartPrice = shoppingCart.Sum(item => item.Price * item.Quantity);
+                var totalCartPrice = shoppingCart.Sum(SC => SC.Quantity * SC.Price);
 
                 return Json(new { Success = true, TotalPrice = productTotalPrice, OverallTotalPrice = totalCartPrice });
             }
@@ -152,27 +152,46 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
             return Json(new { Success = true, Count = cartCount });
         }
 
-        
-        public async Task<IActionResult> OrderSummary()
+        public IActionResult ApplyCoupone(string couponCode)
         {
-            var sessionOrder = GetCartFromSession();
+            try
+            {
+                couponCode = couponCode.ToUpper();
+                Coupon coupon = _couponRepo.Get(C => C.Code == couponCode);
+                if (coupon is not null && coupon.Active)
+                {
+                    HttpContext.Session.SetString("coupon_id", coupon.Code);
 
-            string userId = User.Claims.FirstOrDefault(C => C.Type == ClaimTypes.NameIdentifier).Value;
+                    decimal totalPrice = GetTotalPrice();
 
-            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+                    decimal discount = ((decimal)coupon.Discount / 100) * totalPrice;
 
-            OrderSummaryVM order = new OrderSummaryVM();
+                    decimal totalPriceAfterDiscount = totalPrice - discount;
 
-            order.shoppingCart = sessionOrder;
+                    HttpContext.Session.SetString("totalPriceAfterDiscount", totalPriceAfterDiscount.ToString());
 
-            order.Name = user.UserName;
-            order.Email = user.Email;
-            order.Address = user.Address;
-            order.City = user.City;
-
-            order.TotalPrice = sessionOrder.Sum(S => S.Quantity * S.Price);
-
-            return View(order);
+                    return Json(new {
+                        Success = true,
+                        Discount = discount,
+                        TotalPriceAfterDiscount = totalPriceAfterDiscount
+                    });
+                }
+                else
+                {
+                    return Json(new { Success = false });
+                }
+            }
+            catch
+            {
+                return Json(new { Success = false });
+            }
         }
+
+        public decimal GetTotalPrice()
+        {
+            List<ShoppingCartVM> shoppingCart = GetCartFromSession();
+            return shoppingCart.Sum(SC => SC.Quantity * SC.Price);
+        }
+
     }
 }

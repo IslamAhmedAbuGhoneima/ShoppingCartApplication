@@ -29,8 +29,10 @@ namespace ShoppingCart.Web
 
             builder.Services.AddScoped<IGenericRepository<Category>, CategoryRepository>();
             builder.Services.AddScoped<IGenericRepository<Entities.Models.Product>, ProductRepository>();
+            builder.Services.AddScoped<IGenericRepository<Entities.Models.Coupon>, CouponRepository>();
             builder.Services.AddScoped<IGenericRepository<Order>, OrderRepository>();
             builder.Services.AddScoped<IGenericRepository<OrderItem>, OrderItmeRepository>();
+
 
             builder.Services.AddTransient<IEmailSender, EmailSender>();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));

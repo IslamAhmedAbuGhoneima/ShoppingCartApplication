@@ -24,11 +24,11 @@
                 <div class="card p-4">
                     <h4 class="mb-4">Place Your Order</h4>
                     <div class="text-danger" asp-validation-summary="All"></div>
-                    <form method="post" asp-action="CreateCheckoutSession" asp-controller="Payment">
+                    <form method="post" asp-action="CreateOrder" asp-controller="Order" asp-area="Customer">
                         <!-- Full Name -->
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label"></label>
-                            <input asp-for="Name" class="form-control"  placeholder="Enter your name">
+                            <input asp-for="Name" class="form-control" placeholder="Enter your name">
                             <span class="text-danger" asp-validation-for="Name"></span>
                         </div>
 
@@ -56,11 +56,11 @@
 
                             <div class="col-md-6">
                                 <label asp-for="PhoneNumber" class="form-label"></label>
-                                <input asp-for="PhoneNumber" class="form-control"  placeholder="xxxx-xxx-xxx">
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="xxxx-xxx-xxx">
                                 <span class="text-danger" asp-validation-for="PhoneNumber"></span>
                             </div>
-                            
-                            
+
+
                         </div>
 
                         <!-- Submit Button -->
@@ -76,15 +76,14 @@
                 <div class="card p-4">
                     <h4 class="mb-4">Order Summary</h4>
                     <!-- Order Item -->
-
-                    @foreach(var item in Model.shoppingCart)
+                    @foreach (var item in Model.shoppingCart)
                     {
                         <div class="d-flex justify-content-between mb-3">
                             <div>
                                 <h6>@item.Name</h6>
                                 <small class="text-muted">@(item.Quantity)x $@item.Price</small>
                             </div>
-                            <span>$@(item.Quantity*item.Price)</span>
+                            <span>$@(item.Quantity * item.Price)</span>
                         </div>
 
                     }

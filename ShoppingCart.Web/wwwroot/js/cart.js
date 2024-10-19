@@ -20,11 +20,11 @@ async function addToCart(id) {
 
 }
 
+const finalPriceElement = document.getElementById("finalPrice");
 
 async function changeProductQuantity(id) {
     const productQuantitySelect = document.getElementById(`productQuantity-${id}`);
     const totalPriceElement = document.getElementById(`totalPrice-${id}`);
-    const finalPriceElement = document.getElementById("finalPrice");
     const quantity = productQuantitySelect.value;
 
     const data = await fetch(`/Customer/Cart/ChangeProductQuantity?id=${id}&quantity=${quantity}`);
@@ -52,6 +52,28 @@ async function changeProductQuantity(id) {
 }
 
 
+
+async function applyCoupone() {
+    const couponCodeInput = document.getElementById("coupon-code");
+    const discountAmountElement = document.getElementById("discount-amount");
+    const couponCodeValue = couponCodeInput.value;
+    const data = await fetch(`/Customer/Cart/ApplyCoupone?couponCode=${couponCodeValue}`);
+    const response = await data.json();
+
+    if (response.success) {
+        discountAmountElement.innerHTML = `-${response.discount.toFixed(2)}`;
+        finalPriceElement.innerHTML = `$${response.totalPriceAfterDiscount.toFixed(2)}`;
+    }
+    else {
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: `Invalid coupon code`,
+        });
+    }
+}
+
+
 document.addEventListener("DOMContentLoaded", async () => {
 
     const data = await fetch("/Customer/Cart/GetCartCount");
@@ -60,6 +82,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (response.success) {
         cartSpan.innerHTML = response?.count;
-    } 
+    }
 
-})
+});
+
+

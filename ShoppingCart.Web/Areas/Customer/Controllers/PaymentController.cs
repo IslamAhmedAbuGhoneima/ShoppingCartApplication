@@ -1,134 +1,140 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShoppingCart.Entities.Models;
-using ShoppingCart.Entities.ModelVM;
+using OrderModel = ShoppingCart.Entities.Models.Order;
 using ShoppingCart.Entities.Repositories;
 using ShoppingCart.Web.Helpers;
 using Stripe.Checkout;
-using OrderServices = Stripe.Climate;
-using System.Security.Claims;
-using System.Text.Json;
+using Stripe;
+using StripeCoupon = Stripe.Coupon;
+using ShoppingCart.Entities.ModelVM;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ShoppingCart.Web.Areas.Customer.Controllers
 {
     [Area("Customer")]
+    [Authorize]
     public class PaymentController : Controller
     {
         private readonly IGenericRepository<OrderItem> _orderItemRepo;
-        private readonly IGenericRepository<Order> _orderRepo;
+        private readonly IGenericRepository<OrderModel> _orderRepo;
 
         public PaymentController(IGenericRepository<OrderItem> orderItemRepo,
-                IGenericRepository<Order> orderRepo)
+                IGenericRepository<OrderModel> orderRepo)
         {
             _orderItemRepo = orderItemRepo;
             _orderRepo = orderRepo;
         }
 
 
-        private List<ShoppingCartVM> GetCartFromSession()
+        [HttpGet]
+        public IActionResult Process()
         {
-            string sessionCart = HttpContext.Session.GetString("Cart");
-            return string.IsNullOrEmpty(sessionCart)
-                ? new List<ShoppingCartVM>()
-                : JsonSerializer.Deserialize<List<ShoppingCartVM>>(sessionCart);
+            int? orderId = HttpContext.Session.GetInt32("order_id");
+
+            OrderModel order = _orderRepo.Get(O => O.Id == orderId);
+
+            var orderItems = _orderItemRepo.GetAll(OI => OI.OrderId == orderId, "Product")
+                        .Select(OI => new OrderItemVM
+                        {
+                            ProductName = OI.Product.Name,
+                            Description = OI.Product.Description,
+                            ImageUrl = OI.Product.ImageUrl,
+                            Price = OI.Price,
+                            Quantity = OI.Quantity,
+                        }).ToList();
+
+            OrderItemDetailsVM orderItemDetails = new()
+            {
+                OrderItems = orderItems,
+                Order = order,
+            };
+            return View("Process", orderItemDetails);
         }
 
-        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateCheckoutSession(OrderSummaryVM orderSummaryVM)
+        public async Task<IActionResult> CreateCheckoutSession()
         {
-            var sessionOrder = GetCartFromSession();
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    string userId = User.Claims.FirstOrDefault(C => C.Type == ClaimTypes.NameIdentifier).Value;
+            int? orderId = HttpContext.Session.GetInt32("order_id");
 
-                    Order order = new()
-                    {
-                        UserName = orderSummaryVM.Name,
-                        Email = orderSummaryVM.Email,
-                        Address = orderSummaryVM.Address,
-                        City = orderSummaryVM.City,
-                        PhoneNumber = orderSummaryVM.PhoneNumber,
-                        OrderStatus = OrderStatus.Pending.ToString(),
-                        PaymentStatus = OrderStatus.Pending.ToString(),
-                        TotalPrice = sessionOrder.Sum(O => O.Quantity * O.Price),
-                        UserId = userId,
-                    };
+            OrderModel order = _orderRepo.Get(O => O.Id == orderId);
 
-                    _orderRepo.Add(order);
-                    _orderRepo.Save();
-
-
-                    var sessionLineItemOptions = new List<SessionLineItemOptions>();
-
-                    foreach (var item in sessionOrder)
-                    {
-                        OrderItem orderItem = new()
+            var orderItems = _orderItemRepo.GetAll(OI => OI.OrderId == orderId, "Product")
+                        .Select(OI => new OrderItemVM
                         {
-                            OrderId = order.Id,
-                            ProductId = item.ProductId,
-                            Quantity = item.Quantity,
-                            Price = item.Price,
-                        };
+                            ProductName = OI.Product.Name,
+                            Description = OI.Product.Description,
+                            ImageUrl = OI.Product.ImageUrl,
+                            Price = OI.Price,
+                            Quantity = OI.Quantity,
+                        }).ToList();
 
-                        _orderItemRepo.Add(orderItem);
-                        _orderItemRepo.Save();
+            var sessionLineItemOptions = new List<SessionLineItemOptions>();
 
-                        sessionLineItemOptions.Add(
-                            new()
-                            {
-                                PriceData = new SessionLineItemPriceDataOptions()
-                                {
-                                    UnitAmount = (long)(item.Price*100),
-                                    Currency = "usd",
-                                    ProductData = new SessionLineItemPriceDataProductDataOptions()
-                                    {
-                                        Name = item.Name,
-                                        Description = item.Description,
-                                    },
-                                },
-                                Quantity = item.Quantity
-                            });
-                    }
-
-                    var domain = "https://localhost:7009/";
-                    var options = new SessionCreateOptions
+            foreach (var item in orderItems)
+            {
+                sessionLineItemOptions.Add(
+                    new()
                     {
-                        LineItems = sessionLineItemOptions,
-                        Mode = "payment",
-                        SuccessUrl = domain + $"customer/payment/success?id={order.Id}",
-                        CancelUrl = domain + $"customer/payment/cancel?id={order.Id}",
-                    };
+                        PriceData = new SessionLineItemPriceDataOptions()
+                        {
+                            UnitAmount = (long)(item.Price * 100),
+                            Currency = "usd",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions()
+                            {
+                                Name = item.ProductName,
+                                Description = item.Description
+                            },
+                        },
+                        Quantity = item.Quantity
+                    }
+                );
+            }
 
-                    var service = new SessionService();
-                    //Session session = service.Create(options);
-                    Session session =  await service.CreateAsync(options);
-                    order.SessionId = session.Id;
+            
 
-                    _orderRepo.Save();
+            var domain = "https://localhost:7009/";
+            var options = new SessionCreateOptions
+            {
+                LineItems = sessionLineItemOptions,
+                Mode = "payment",
+                SuccessUrl = domain + $"customer/payment/success?id={orderId}",
+                CancelUrl = domain + $"customer/payment/cancel?id={orderId}",
+            };
 
-                    Response.Headers.Add("Location", session.Url);
-
-                    return new StatusCodeResult(303);
-
-                }
-                catch (Exception ex)
+            if (order.CouponCode != null)
+            {
+                var couponOptions = new CouponCreateOptions()
                 {
-                    ModelState.AddModelError("", ex.Message);
-                }
+                    Name = order.CouponCode,
+                    PercentOff = order.Discount,
+                    Duration = "once"
+                };
+                var couponService = new CouponService();
+                StripeCoupon stripeCoupon = await couponService.CreateAsync(couponOptions);
+
+                options.Discounts = [
+                    new() { Coupon = stripeCoupon.Id }
+                ];
 
             }
-            orderSummaryVM.shoppingCart = sessionOrder;
-            orderSummaryVM.TotalPrice = sessionOrder.Sum(S => S.Quantity * S.Price);
-            return View("/Areas/Customer/Views/Cart/OrderSummary.cshtml",  orderSummaryVM);
 
+            var service = new SessionService();
+            //Session session = service.Create(options);
+            Session session = await service.CreateAsync(options);
+            order.SessionId = session.Id;
+
+            _orderRepo.Save();
+
+            Response.Headers.Add("Location", session.Url);
+
+            return new StatusCodeResult(303);
         }
+
 
         public IActionResult Success(int id)
         {
-            Order order = _orderRepo.Get(O => O.Id == id);
+            OrderModel order = _orderRepo.Get(O => O.Id == id);
             var orderItems = _orderItemRepo.GetAll(OI => OI.OrderId == id, "Product").ToList();
 
             var services = new SessionService();
@@ -156,7 +162,7 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
 
         public IActionResult Cancel(int id)
         {
-            Order order = _orderRepo.Get(O => O.Id == id);
+            OrderModel order = _orderRepo.Get(O => O.Id == id);
             if(order is not null)
             {
                 _orderRepo.Remove(order);
@@ -165,5 +171,6 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
             }
             return View();
         }
-    }
+
+	}
 }
