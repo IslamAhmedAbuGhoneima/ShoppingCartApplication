@@ -54,7 +54,9 @@ namespace ShoppingCart.Entities.Models
         public ICollection<OrderItem> Items { get; set; } = null!;
 
         [ForeignKey("Coupon")]
-        public string? CouponCode { get; set; }
+        public int? CouponId { get; set; }
+
+        public string CouponCode { get; set; }
 
         public int? Discount { get; set; }
 

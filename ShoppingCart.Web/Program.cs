@@ -52,7 +52,6 @@ namespace ShoppingCart.Web
               .AddEntityFrameworkStores<AppDbContext>();
 
 
-
             StripeConfiguration.ApiKey = builder.Configuration["Stripe:Secretkey"];
 
             var app = builder.Build();

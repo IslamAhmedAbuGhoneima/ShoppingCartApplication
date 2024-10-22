@@ -12,8 +12,8 @@ using ShoppingCart.DataAccess.Data;
 namespace ShoppingCart.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241019145053_AddingCouponModelAndModifyOrderModel")]
-    partial class AddingCouponModelAndModifyOrderModel
+    [Migration("20241020192051_AddCouponModelAndModifyingOrderModel")]
+    partial class AddCouponModelAndModifyingOrderModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -257,16 +257,23 @@ namespace ShoppingCart.DataAccess.Migrations
 
             modelBuilder.Entity("ShoppingCart.Entities.Models.Coupon", b =>
                 {
-                    b.Property<string>("Code")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Discount")
                         .HasColumnType("int");
 
-                    b.HasKey("Code");
+                    b.HasKey("Id");
 
                     b.ToTable("Coupon");
                 });
@@ -291,7 +298,11 @@ namespace ShoppingCart.DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CouponCode")
-                        .HasColumnType("nvarchar(450)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("CouponId")
+                        .HasColumnType("int");
 
                     b.Property<DateOnly>("CreatedAt")
                         .HasColumnType("date");
@@ -343,7 +354,7 @@ namespace ShoppingCart.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CouponCode");
+                    b.HasIndex("CouponId");
 
                     b.ToTable("Orders");
                 });
@@ -468,7 +479,7 @@ namespace ShoppingCart.DataAccess.Migrations
                 {
                     b.HasOne("ShoppingCart.Entities.Models.Coupon", "Coupon")
                         .WithMany("Orders")
-                        .HasForeignKey("CouponCode");
+                        .HasForeignKey("CouponId");
 
                     b.Navigation("Coupon");
                 });

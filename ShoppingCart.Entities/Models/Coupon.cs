@@ -4,13 +4,14 @@ namespace ShoppingCart.Entities.Models
 {
 	public class Coupon
 	{
-		[Key]
+		public int Id { get; set; }
+
 		public string Code { get; set; }
 
 		public int Discount { get; set; }
 
 		public bool Active { get; set; }
 
-		public ICollection<Order> Orders { get; set; } = null!;
+		public ICollection<Order>? Orders { get; set; } = null!;
 	}
 }

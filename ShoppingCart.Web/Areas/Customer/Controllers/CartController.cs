@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ShoppingCart.Entities.Models;
 using ShoppingCart.Entities.ModelVM;
 using ShoppingCart.Entities.Repositories;

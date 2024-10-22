@@ -68,10 +68,19 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
             order.Address = user.Address;
             order.City = user.City;
 
+            string? couponId = HttpContext.Session.GetString("coupon_id");
+
+			order.TotalPriceBeforeDiscount = sessionOrder.Sum(S => S.Quantity * S.Price);
+
+            if (couponId is not null)
+            {
+                Coupon coupon = _couponRepo.Get(C => C.Code == couponId);
+				order.DiscountAmount = ((decimal)coupon.Discount / 100) * order.TotalPriceBeforeDiscount;
+			}
 			
-			order.TotalPrice = GetTotalPriceAfterDiscount() != 0 ?
+            order.TotalPrice = GetTotalPriceAfterDiscount() != 0 ?
 				GetTotalPriceAfterDiscount() :
-				order.TotalPrice = sessionOrder.Sum(S => S.Quantity * S.Price);
+				order.TotalPrice = order.TotalPriceBeforeDiscount;
 			
             return View(order);
         }
@@ -144,7 +153,6 @@ namespace ShoppingCart.Web.Areas.Customer.Controllers
 			orderSummaryForm.shoppingCart = sessionCart;
 			orderSummaryForm.TotalPrice = orderSummaryForm.TotalPrice;
 			return View(orderSummaryForm);
-			//return View("/Areas/Customer/Views/Cart/OrderSummary.cshtml", orderSummaryForm);
 		}
 	}
 }

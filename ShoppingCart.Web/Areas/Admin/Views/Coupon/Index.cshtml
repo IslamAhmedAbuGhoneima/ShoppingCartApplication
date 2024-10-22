@@ -1,0 +1,40 @@
+﻿@model List<Coupon>
+
+@{
+    ViewBag.PageTitle = "Coupons Management";
+    ViewBag.CardTitle = "Coupons List";
+}
+
+
+<div>
+    <a asp-action="Create" asp-controller="Coupon" class="btn btn-primary">Create</a>
+</div>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Coupon</th>
+            <th>Discount</th>
+            <th>Active</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Coupon coupon in Model)
+        {
+            <tr>
+                <td>@coupon.Code</td>
+                <td>%@coupon.Discount</td>
+                <td>
+                    <input type="checkbox" disabled  @(coupon.Active?"checked":"") />
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@coupon.Id"  class="btn btn-success">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@coupon.Id" class="btn btn-danger">Delete</a>
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+

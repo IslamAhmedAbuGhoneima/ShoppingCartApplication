@@ -92,7 +92,13 @@
                     <!-- Subtotal -->
                     <div class="d-flex justify-content-between mb-3">
                         <span>Subtotal</span>
-                        <span>$@Model.TotalPrice</span>
+                        <span>$@(Model.TotalPriceBeforeDiscount)</span>
+                    </div>
+
+                    <!-- Discount -->
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Discount</span>
+                        <span class="text-danger">-@Model.DiscountAmount.ToString("C")</span>
                     </div>
 
                     <!-- Shipping -->
