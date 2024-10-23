@@ -6,6 +6,13 @@ using ShoppingCart.Entities.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Stripe;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace ShoppingCart.Web
 {
@@ -15,6 +22,8 @@ namespace ShoppingCart.Web
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            var configuration = builder.Configuration;
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
@@ -35,24 +44,114 @@ namespace ShoppingCart.Web
 
 
             builder.Services.AddTransient<IEmailSender, EmailSender>();
-            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+            builder.Services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
-                string connectionString = builder.Configuration.GetConnectionString("conStr")!;
+                string connectionString = configuration.GetConnectionString("conStr")!;
                 options.UseSqlServer(connectionString);
             });
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+                options.User.RequireUniqueEmail = true;
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Password.RequireUppercase = false;
             }).AddDefaultUI()
               .AddDefaultTokenProviders()
               .AddEntityFrameworkStores<AppDbContext>();
 
 
-            StripeConfiguration.ApiKey = builder.Configuration["Stripe:Secretkey"];
+            #region Google & Facebook Authentication
+
+            builder.Services.AddAuthentication()
+            .AddGoogle(googleOptions =>
+            {
+                googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
+                googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+            })
+            .AddFacebook(facebookOptions =>
+            {
+                facebookOptions.AppId = configuration["Authentication:Facebook:AppId"];
+                facebookOptions.AppSecret = configuration["Authentication:Facebook:AppSecret"];
+            }).AddOAuth("GitHub", options =>
+            {
+                options.ClientId = configuration["Authentication:GitHub:ClientId"];
+                options.ClientSecret = configuration["Authentication:GitHub:ClientSecret"];
+
+                options.CallbackPath = new PathString("/signin-github");
+
+                // GitHub endpoints for OAuth
+                options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+                options.TokenEndpoint = "https://github.com/login/oauth/access_token";
+                options.UserInformationEndpoint = "https://api.github.com/user";
+
+                options.SaveTokens = true;
+
+                options.Scope.Add("user:email");
+
+                // Configure user data retrieval
+                options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+                options.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
+                options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+
+                // OAuth event configuration
+                options.Events = new OAuthEvents
+                {
+                    OnCreatingTicket = async context =>
+                    {
+                        try
+                        {
+                            // Helper function to get response from GitHub API
+                            async Task<JsonDocument> GetGitHubDataAsync(string endpoint, string accessToken)
+                            {
+                                var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
+                                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                                var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
+                                response.EnsureSuccessStatusCode();
+
+                                return JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                            }
+
+                            // Retrieve user information
+                            var user = await GetGitHubDataAsync(context.Options.UserInformationEndpoint, context.AccessToken);
+                            context.RunClaimActions(user.RootElement);
+
+                            // Retrieve user's email if it is private
+                            var emails = await GetGitHubDataAsync("https://api.github.com/user/emails", context.AccessToken);
+                            var primaryEmail = emails.RootElement
+                                .EnumerateArray()
+                                .FirstOrDefault(email => email.GetProperty("primary").GetBoolean())
+                                .GetProperty("email")
+                                .GetString();
+
+                            if (!string.IsNullOrEmpty(primaryEmail))
+                            {
+                                context.Identity?.AddClaim(new Claim(ClaimTypes.Email, primaryEmail));
+                            }
+                        }
+                        catch (HttpRequestException ex)
+                        {
+                            // Handle HTTP request errors
+                            context.Fail($"Error retrieving GitHub user information: {ex.Message}");
+                        }
+                        catch (JsonException ex)
+                        {
+                            // Handle JSON parsing errors
+                            context.Fail($"Error parsing GitHub user data: {ex.Message}");
+                        }
+                    }
+                };
+            });
+
+            #endregion
+
+
+            StripeConfiguration.ApiKey = configuration["Stripe:Secretkey"];
 
             var app = builder.Build();
 

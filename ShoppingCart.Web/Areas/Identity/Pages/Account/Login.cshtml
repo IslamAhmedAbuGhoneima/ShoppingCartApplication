@@ -32,7 +32,8 @@
                     <div>
                         <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
                     </div>
-                    <div class="text-center mt-4">
+                    
+                    <div class="text-center">
                         <p>
                             <a id="forgot-password" asp-page="./ForgotPassword" class="w-100 btn btn-danger">Forgot your password?</a>
                         </p>
@@ -47,11 +48,41 @@
                 </form>
             </section>
         </div>
+
         <div class="col-md-6 col-md-offset-2">
-            <div>
-                <img class="img-fluid" src="~/img/login@4x.png" title="Login Image" />
-            </div>
-        </div>
+            <section>
+                <h3>Use another service to log in.</h3>
+                <hr />
+                @{
+                    if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                    {
+                        <div>
+                            <p>
+                                There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">
+                                    article
+                                    about setting up this ASP.NET application to support logging in via external services
+                                </a>.
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                            <div>
+                                <p>
+                                    @foreach (var provider in Model.ExternalLogins!)
+                                    {
+                                        <button type="submit" class="btn btn-light" style="width:80px; height:80px" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                            <img class="img-fluid" src="/img/brands/@(provider.Name.ToLower()).png"/>
+                                        </button>
+                                    }
+                                </p>
+                            </div>
+                        </form>
+                    }
+                }
+            </section>
+        </div> 
     </div>
 </div>
 
